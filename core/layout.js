@@ -42,3 +42,44 @@ export function layoutTree(nodeId, x, yTop) {
         currentY += child.subtreeHeight + 40;
     });
 }
+
+export function placeNewNode(nodeId, parentId) {
+    const parent = getNode(parentId);
+    const node = getNode(nodeId);
+
+    // 初始位置：父节点右侧
+    let x = parent.x + 220;
+    let y = parent.y;
+
+    const minGap = 20;
+    const stepY = 40;
+
+    const isOverlap = (a, b) => (
+        a.x < b.x + b.width + minGap &&
+        a.x + a.width + minGap > b.x &&
+        a.y < b.y + b.height + minGap &&
+        a.y + a.height + minGap > b.y
+    );
+
+    // 所有其它节点，排除自己和父节点
+    const others = nodes.filter(n => n.id !== nodeId && n.id !== parentId);
+
+    let collided;
+    do {
+        collided = others.some(other =>
+            isOverlap(
+                { x, y, width: node.width, height: node.height },
+                other
+            )
+        );
+
+        if (collided) {
+            y += stepY;  // 向下找空位
+        }
+    } while (collided);
+
+    node.x = x;
+    node.y = y;
+}
+
+

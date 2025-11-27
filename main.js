@@ -5,7 +5,8 @@ import { initMouse } from './events/mouse.js';
 import { initNodeEditor } from './events/editNode.js';
 
 const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+// const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext('2d', { alpha: false });
 const editor = document.getElementById("nodeEditor");
 
 const dpr = window.devicePixelRatio || 1;
@@ -41,3 +42,26 @@ initNodeEditor(canvas, editor, ctx, state);
 
 // ---------- 渲染 ----------
 render(ctx, state.scale, state.offsetX, state.offsetY, state.hoverNode);
+
+
+
+
+let last = performance.now();
+let frames = 0;
+
+function fpsLoop() {
+    frames++;
+    const now = performance.now();
+
+    if (now - last >= 1000) {
+        const fps = frames;
+        frames = 0;
+        last = now;
+
+        document.getElementById("fps").textContent = `FPS: ${fps}`;
+    }
+
+    requestAnimationFrame(fpsLoop);
+}
+
+fpsLoop(); // 启动 FPS 监控

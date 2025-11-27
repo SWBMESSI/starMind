@@ -5,11 +5,18 @@
 <title>清晰缩小 MindMap</title>
 <style>
   body { margin:0; overflow:hidden; }
-  canvas { display:block; border:1px solid #ccc; cursor: grab; background:#f1f1f1; }
+  canvas { display:block; border:1px solid #ccc; cursor: grab; background:#f1f1f1;   transform: translateZ(0);}
   #nodeEditor {
       position:absolute; display:none; font-size:16px; padding:4px 8px; border:1px solid #aaa; border-radius:6px;
   }
 </style>
+<div id="fps" 
+     style="position:fixed;top:10px;left:10px;
+            background:#000;color:#0f0;padding:5px 10px;
+            font-family:Consolas;font-size:14px;
+            border-radius:4px;opacity:0.8;z-index:9999;">
+    FPS: --
+</div>
 </head>
 <body>
 <canvas id="canvas"></canvas>

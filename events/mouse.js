@@ -1,5 +1,5 @@
 import { nodes, edges, getNextNodeId,nodeId } from '../core/store.js';
-import { computeSubtreeHeight, layoutTree } from '../core/layout.js';
+import { computeSubtreeHeight, layoutTree,placeNewNode} from '../core/layout.js';
 import { render } from '../render/renderer.js';
 import { animateNodes } from '../core/animation.js';
 
@@ -36,14 +36,14 @@ export function initMouse(canvas, ctx, state, editor) {
         if(state.dragNode){
             state.dragNode.x = x - state.dragOffsetX;
             state.dragNode.y = y - state.dragOffsetY;
-            state.dragNode.targetY = x - state.dragNode.x;
-            state.dragNode.targetY = y - state.dragNode.y;
+            state.dragNode.targetX = state.dragNode.x;
+            state.dragNode.targetY = state.dragNode.y;
             render(ctx, state.scale, state.offsetX, state.offsetY, state.hoverNode);
         } else if(state.isPanning){
             state.offsetX = state.panOffsetX + e.clientX - state.panStartX;
             state.offsetY = state.panOffsetY + e.clientY - state.panStartY;
-            state.dragNode.targetY = x - state.dragNode.x;
-            state.dragNode.targetY = y - state.dragNode.y;
+            // state.dragNode.targetX = x - state.dragNode.x;
+            // state.dragNode.targetY = y - state.dragNode.y;
             render(ctx, state.scale, state.offsetX, state.offsetY, state.hoverNode);
         } else {
             render(ctx, state.scale, state.offsetX, state.offsetY, state.hoverNode);
@@ -74,7 +74,7 @@ export function initMouse(canvas, ctx, state, editor) {
     canvas.addEventListener("mouseup", ()=>{
         if(state.dragNode){
             // 放置节点 → 自动分开重叠
-            resolveCollisionEdge(state.dragNode);
+            // resolveCollisionEdge(state.dragNode);
         }
         state.dragNode = null;
         state.isPanning = false;
@@ -82,19 +82,19 @@ export function initMouse(canvas, ctx, state, editor) {
 
         //   const overlap = (other.targetY + other.height) - node.targetY + gap;
         // node.targetY += overlap;
-        animationLoop();
-        render(ctx, state.scale, state.offsetX, state.offsetY, state.hoverNode);
+        // animationLoop();
+        // render(ctx, state.scale, state.offsetX, state.offsetY, state.hoverNode);
         // state.dragNode = null;
     });
     // 分离重叠的函数
     function resolveCollisionEdge(node, gap = 10) {
         if (!node) return;
-
+        console.log(123)
         for (let other of nodes) {
             if (!other || other === node) continue;
 
             if (isColliding(node, other, 0)) {
-                if (node.y > other.y) {
+                if (node.targetY > other.targetY) {
                     // A在B下方
                     const overlap = (other.targetY + other.height) - node.targetY + gap;
                     node.targetY += overlap;
@@ -112,12 +112,12 @@ export function initMouse(canvas, ctx, state, editor) {
         }
     }
 
-    function isColliding(a, b, gap = 0) {
-        return (
-            a.x < b.x + b.width + gap &&
-            a.x + a.width + gap > b.x &&
-            a.y < b.y + b.height + gap &&
-            a.y + a.height + gap > b.y
+    function isColliding(a, b, padding = 0) {
+        return !(
+            a.targetX + a.width  < b.targetX - padding ||
+            a.targetX > b.targetX + b.width + padding ||
+            a.targetY + a.height < b.targetY - padding ||
+            a.targetY > b.targetY + b.height + padding
         );
     }
 
@@ -141,12 +141,13 @@ export function initMouse(canvas, ctx, state, editor) {
         const by = state.hoverNode.y - BUTTON_SIZE;
         if(x>=bx && x<=bx+BUTTON_SIZE && y>=by && y<=by+BUTTON_SIZE){
             let id = getNextNodeId(); // 先存当前 id
-            const newNode = {id:id, text:`节点${id}`, x:state.hoverNode.x, y:state.hoverNode.y+150, width:120, height:50, children:[], folded:false,targetX:state.hoverNode.x,targetY:state.hoverNode.y};
+            const newNode = {id:id, text:`节点${id}`, x:state.hoverNode.x, y:state.hoverNode.y+150, width:120, height:50, children:[], folded:false,targetX:state.hoverNode.x,targetY:state.hoverNode.y+150};
             nodes.push(newNode);
             edges.push({from:state.hoverNode.id,to:newNode.id});
             state.hoverNode.children.push(newNode.id);
             computeSubtreeHeight(1);
-            layoutTree(1,100,100);
+            // layoutTree(1,100,100);
+            placeNewNode(newNode.id,state.hoverNode.id);
             render(ctx, state.scale, state.offsetX, state.offsetY, state.hoverNode);
         }
     });
